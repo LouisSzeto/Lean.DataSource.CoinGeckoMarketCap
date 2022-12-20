@@ -1,3 +1,4 @@
+import getopt, sys
 from CLRImports import *
 from QuantConnect.Logging import *
 from QuantConnect.Securities.CurrencyConversion import *
@@ -21,8 +22,10 @@ class CoinGeckoMarketCapDataDownloader:
 
         self.symbol_id = self.GetAllSupportedSymbols(db_file)
         
-    def Run(self):
-        for symbol in self.symbol_id:
+    def Run(self, only_today=True):
+        days = "1" if only_today else "max"
+        
+        for i, symbol in enumerate(self.symbol_id):
             coin_id = self.symbol_id[symbol]
             Log.Trace(f"CoinGeckoMarketCapDataDownloader:Run(): Process coin - {symbol}")
             trial_left = 5
@@ -32,13 +35,16 @@ class CoinGeckoMarketCapDataDownloader:
                 try:
                     # Fetch data
                     req_start_time = time.time()
-                    coin_history = self.HttpRequester(f"{coin_id}/market_chart?vs_currency=usd&days=max&interval=daily")['market_caps']
+                    coin_history = self.HttpRequester(f"{coin_id}/market_chart?vs_currency=usd&days={days}&interval=daily")['market_caps']
                     req_end_time = time.time()
                     req_time = req_end_time - req_start_time
                     time.sleep(max(1 / rate_gate - req_time, 0))
 
-                    if len(coin_history) == 0:
+                    if len(coin_history) <= 1:
                         raise Exception("No data fetched")
+                    
+                    # Get only data that already been consolidated
+                    coin_history = coin_history[:-1]
 
                     # Format data
                     lines = []
@@ -60,6 +66,9 @@ class CoinGeckoMarketCapDataDownloader:
                     print(f'CoinGeckoMarketCapDataDownloader:Run(): {e} - Failed to parse data for {symbol} - Retrying')
                     time.sleep(2)
                     trial_left -= 1
+            
+            if (i+1) % 100 == 0:
+                print(f'CoinGeckoMarketCapDataDownloader:Run(): processed {i+1}/{len(self.symbol_id)} coins')
 
     def GetAllSupportedSymbols(self, db_file):
         start = time.time()
@@ -124,6 +133,15 @@ class CoinGeckoMarketCapDataDownloader:
 
 
 if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        raise ValueError("process.py only takes 1 argument.")
+    argumentList = sys.argv[1]
+    
+    arguments, values = getopt.getopt(argumentList, "", ["process-only-today"])
+    for currentArgument, currentValue in arguments:
+        if currentArgument == "--process-only-today":
+            today_only = bool(currentValue)
+    
     start_time = time.time()
     
     db_file = Path(datafolder) / "symbol-properties/symbol-properties-database.csv"
@@ -131,7 +149,7 @@ if __name__ == "__main__":
     Config.Set("data-folder", datafolder)
     
     instance = CoinGeckoMarketCapDataDownloader(destinationDirectory, db_file)
-    instance.Run()
+    instance.Run(today_only)
     
     time_taken = time.time() - start_time
     print("Total time taken to run in minutes : ", time_taken//60)
