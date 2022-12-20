@@ -1,4 +1,4 @@
-﻿/*
+/*
  * QUANTCONNECT.COM - Democratizing Finance, Empowering Individuals.
  * Lean Algorithmic Trading Engine v2.0. Copyright 2014 QuantConnect Corporation.
  *
@@ -15,17 +15,20 @@
 */
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
+using NodaTime;
 using NUnit.Framework;
 using QuantConnect.Data;
 using QuantConnect.DataSource;
+using QuantConnect.Data.Market;
 
 namespace QuantConnect.DataLibrary.Tests
 {
     [TestFixture]
-    public class CoinGeckoMarketCapTests
+    public class CoinGeckoMarketCapUniverseTests
     {
         [Test]
         public void JsonRoundTrip()
@@ -39,10 +42,14 @@ namespace QuantConnect.DataLibrary.Tests
         }
 
         [Test]
-        public void Clone()
+        public void Selection()
         {
-            var expected = CreateNewInstance();
-            var result = expected.Clone();
+            var datum = CreateNewSelection();
+
+            var expected = from d in datum
+                            where d.MarketCap > 7
+                            select d.Symbol;
+            var result = new List<Symbol> {Symbol.Create("BTC", SecurityType.Base, Market.USA)};
 
             AssertAreEqual(expected, result);
         }
@@ -65,12 +72,33 @@ namespace QuantConnect.DataLibrary.Tests
 
         private BaseData CreateNewInstance()
         {
-            return new CoinGeckoMarketCap
+            return new CoinGeckoMarketCapUniverse
             {
-                Symbol = Symbol.Empty,
+                Symbol = Symbol.Create("BTC", SecurityType.Base, Market.USA),
                 Time = DateTime.Today,
-                Value = 1000.25m,
-                MarketCap = 1000.25m
+                Value = 10m,
+                MarketCap = 10m
+            };
+        }
+        
+        private IEnumerable<CoinGeckoMarketCapUniverse> CreateNewSelection()
+        {
+            return new []
+            {
+                new CoinGeckoMarketCapUniverse
+                {
+                    Symbol = Symbol.Create("BTC", SecurityType.Base, Market.USA),
+                    Time = DateTime.Today,
+                    Value = 10m,
+                    MarketCap = 10m
+                },
+                new CoinGeckoMarketCapUniverse
+                {
+                    Symbol = Symbol.Create("ETH", SecurityType.Base, Market.USA),
+                    Time = DateTime.Today,
+                    Value = 5m,
+                    MarketCap = 5m
+                }
             };
         }
     }

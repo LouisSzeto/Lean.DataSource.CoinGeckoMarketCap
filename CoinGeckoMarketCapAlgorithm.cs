@@ -16,7 +16,6 @@
 
 using QuantConnect.Data;
 using QuantConnect.Util;
-using QuantConnect.Orders;
 using QuantConnect.Algorithm;
 using QuantConnect.DataSource;
 
@@ -34,8 +33,8 @@ namespace QuantConnect.DataLibrary.Tests
         /// </summary>
         public override void Initialize()
         {
-            SetStartDate(2013, 10, 07);  //Set Start Date
-            SetEndDate(2013, 10, 11);    //Set End Date
+            SetStartDate(2020, 10, 07);  //Set Start Date
+            SetEndDate(2020, 10, 11);    //Set End Date
             _customDataSymbol = AddData<CoinGeckoMarketCap>("BTC").Symbol;
         }
 
@@ -48,8 +47,8 @@ namespace QuantConnect.DataLibrary.Tests
             var data = slice.Get<CoinGeckoMarketCap>();
             if (!data.IsNullOrEmpty())
             {
-                var marketcap = data[_customDataSymbol];
-                Log($"{Time} :: {marketcap}");
+                var marketCap = data[_customDataSymbol];
+                Log($"{Time} :: {marketCap}");
             }
         }
 

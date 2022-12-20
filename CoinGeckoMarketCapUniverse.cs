@@ -16,7 +16,6 @@
 
 using System;
 using NodaTime;
-using ProtoBuf;
 using System.IO;
 using QuantConnect.Data;
 using System.Collections.Generic;
@@ -27,9 +26,10 @@ namespace QuantConnect.DataSource
     /// <summary>
     /// Example custom data type
     /// </summary>
-    [ProtoContract(SkipConstructor = true)]
     public class CoinGeckoMarketCapUniverse : BaseData
     {
+        private static readonly TimeSpan _period = TimeSpan.FromDays(1);
+
         /// <summary>
         /// Coin Name
         /// </summary>
@@ -38,17 +38,7 @@ namespace QuantConnect.DataSource
         /// <summary>
         /// Marketcap of the coin for the given day
         /// </summary>
-        public decimal Marketcap { get; set; }
-
-	/// <summary>
-        /// The total volume locked of the coin for the given day
-        /// </summary>
-        public decimal TotalVolumeLocked { get; set; }
-
-        /// <summary>
-        /// Time passed between the date of the data and the time the data became available to us
-        /// </summary>
-        private TimeSpan _period { get; set; } = TimeSpan.FromDays(1);
+        public decimal MarketCap { get; set; }
 
         /// <summary>
         /// Time the data became available
@@ -89,17 +79,15 @@ namespace QuantConnect.DataSource
         {
             var csv = line.Split(','); 
             var coin = csv[0].ToUpperInvariant();
-            var marketCap = decimal.Parse(csv[1], NumberStyles.Any, CultureInfo.InvariantCulture); 
-	    var totalVolumeLocked = decimal.Parse(csv[2], NumberStyles.Any, CultureInfo.InvariantCulture);
+            var marketCap = decimal.Parse(csv[1], NumberStyles.Any, CultureInfo.InvariantCulture);
 
             return new CoinGeckoMarketCapUniverse
             {
                 Symbol = config.Symbol,
                 Coin = coin,
-                Marketcap = marketCap,
+                MarketCap = marketCap,
                 Time =  date - _period,
-                Value = marketCap,
-		TotalVolumeLocked = totalVolumeLocked
+                Value = marketCap
             };
         }
 
@@ -118,7 +106,7 @@ namespace QuantConnect.DataSource
         /// </summary>
         public override string ToString()
         {
-            return $"{Coin}.{Symbol} - Marketcap : {Marketcap}";
+            return $"{Coin}.{Symbol} - Marketcap : {MarketCap}";
         }
 
         /// <summary>

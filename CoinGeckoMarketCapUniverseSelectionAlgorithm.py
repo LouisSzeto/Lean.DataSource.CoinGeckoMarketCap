@@ -37,10 +37,10 @@ class CoinGeckoMarketCapUniverseSelectionAlgorithm(QCAlgorithm):
         :return: List of Symbol objects '''
 
         for datum in data:
-            self.Log(f"{datum.Symbol},{datum.Coin},{datum.Marketcap},{datum.TotalVolumeLocked}")
+            self.Log(f"{datum.Symbol},{datum.Coin},{datum.MarketCap}")
         
         # define our selection criteria
-        return [Symbol.Create($"{d.Coin}USD", SecurityType.Crypto, Market.GDAX); for d in data if d.Marketcap > 200000]
+        return [Symbol.Create(f"{d.Coin}USD", SecurityType.Crypto, Market.GDAX) for d in data if d.MarketCap > 200000]
 
     def OnSecuritiesChanged(self, changes):
         ''' Event fired each time that we add/remove securities from the data feed

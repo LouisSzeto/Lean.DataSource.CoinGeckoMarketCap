@@ -31,5 +31,5 @@ class CoinGeckoMarketCapAlgorithm(QCAlgorithm):
         '''
         data = slice.Get(CoinGeckoMarketCap)
         if data:
-            marketcap = data[self.custom_data_symbol]
-            self.Log(marketcap.ToString())
+            market_cap = data[self.custom_data_symbol]
+            self.Log(market_cap.ToString())

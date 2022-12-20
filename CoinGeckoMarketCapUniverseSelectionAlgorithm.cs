@@ -44,13 +44,13 @@ namespace QuantConnect.Algorithm.CSharp
             {
                 foreach (var datum in data)
                 {
-                    Log($"{datum.Symbol},{datum.Coin},{datum.Marketcap},{datum.TotalVolumeLocked}");
+                    Log($"{datum.Symbol},{datum.Coin},{datum.MarketCap}");
                 }
 
                 // define our selection criteria
                 return from d in data
-                       where d.Marketcap > 200000 && d.TotalVolumeLocked > 200000
-                       select QuantConnect.Symbol.Create($"{d.Coin}USD", SecurityType.Crypto, Market.GDAX);;
+                       where d.MarketCap > 200000
+                       select QuantConnect.Symbol.Create($"{d.Coin}USD", SecurityType.Crypto, Market.GDAX);
             });
         }
 
